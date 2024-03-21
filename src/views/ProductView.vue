@@ -57,13 +57,25 @@
                     <h3>{{ productDetails.name }}</h3>
                   </div>
                   <div class="pd-desc">
-                    <p>{{ productDetails.description }}</p>
+                    <p v-html="productDetails.description"></p>
                     <h4>${{ productDetails.price }}</h4>
                   </div>
                   <div class="quantity">
-                    <a href="shopping-cart.html" class="primary-btn pd-cart"
-                      >Add To Cart</a
-                    >
+                    <router-link to="/cart">
+                      <a
+                        @click="
+                          saveKeranjang(
+                            productDetails.id,
+                            productDetails.name,
+                            productDetails.price,
+                            productDetails.galleries[0].photo
+                          )
+                        "
+                        href="#"
+                        class="primary-btn pd-cart"
+                        >Add To Cart</a
+                      >
+                    </router-link>
                   </div>
                 </div>
               </div>
@@ -101,21 +113,13 @@ export default {
   data() {
     return {
       product_images: "",
-      thumbs: [
-        "img/mickey1.jpg",
-        "img/mickey2.jpg",
-        "img/mickey3.jpg",
-        "img/mickey4.jpg",
-      ],
-      // idProduct: this.$route.params.id,
       productDetails: [],
+      keranjangUser: [],
     };
   },
   methods: {
     changeImage(urlImage) {
       this.product_images = urlImage;
-      // eslint-disable-next-line no-console
-      // console.log(this.idProduct);
     },
     setDataPicture(data) {
       // replace object productDetails dengan data dari API
@@ -123,8 +127,27 @@ export default {
       // replace value gambar default dengan data dari API (galleries)
       this.product_images = data.galleries[0].photo;
     },
+    saveKeranjang(idProduct, nameProduct, priceProduct, photoProduct) {
+      var productStored = {
+        id: idProduct,
+        name: nameProduct,
+        price: priceProduct,
+        photo: photoProduct,
+      };
+
+      this.keranjangUser.push(productStored);
+      const parsed = JSON.stringify(this.keranjangUser);
+      localStorage.setItem("keranjangUser", parsed);
+    },
   },
   mounted() {
+    if (localStorage.getItem("keranjangUser")) {
+      try {
+        this.keranjangUser = JSON.parse(localStorage.getItem("keranjangUser"));
+      } catch (e) {
+        localStorage.removeItem("keranjangUser");
+      }
+    }
     axios
       .get("http://miastore.site/api/products", {
         params: {
